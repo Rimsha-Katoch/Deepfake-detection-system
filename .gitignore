@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+.venv/
+
+# Uploads
+uploads/
+
+# Datasets
+audio_dataset/
+data/
+
+# Model Weights
+models/*.pth
+
+# Generated Frames
+static/frames/
+
+# Temporary files
+temp_audio.wav
+temp_spec.png
+
+# VS Code
+.vscode/
+
+# System files
+.DS_Store

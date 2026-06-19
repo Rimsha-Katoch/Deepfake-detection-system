@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login | DeepFake AI</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#dfe9f3,#fce1f1);
+min-height:100vh;
+}
+
+.login-container{
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:calc(100vh - 100px);
+padding:30px;
+}
+
+.box{
+width:450px;
+background:white;
+padding:35px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.12);
+}
+
+.tabs{
+display:flex;
+margin-bottom:25px;
+border-radius:12px;
+overflow:hidden;
+background:#f1f1f1;
+}
+
+.tabs button{
+flex:1;
+padding:14px;
+border:none;
+cursor:pointer;
+font-size:16px;
+font-weight:600;
+transition:.3s;
+}
+
+.active-tab{
+background:#6c63ff;
+color:white;
+}
+
+h2{
+text-align:center;
+margin-bottom:20px;
+color:#4b0082;
+}
+
+.form{
+display:none;
+}
+
+.form.active{
+display:block;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-bottom:15px;
+border:1px solid #ccc;
+border-radius:10px;
+font-size:15px;
+}
+
+.submit-btn{
+width:100%;
+padding:13px;
+border:none;
+background:linear-gradient(135deg,#7aa7ff,#d7a6ff);
+color:white;
+font-size:16px;
+font-weight:600;
+border-radius:10px;
+cursor:pointer;
+transition:.3s;
+}
+
+.submit-btn:hover{
+transform:translateY(-2px);
+}
+
+.message{
+text-align:center;
+margin-top:15px;
+font-size:14px;
+font-weight:600;
+}
+
+.success{
+color:#2ecc71;
+}
+
+.error{
+color:#e74c3c;
+}
+
+</style>
+
+</head>
+
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="login-container">
+
+<div class="box">
+
+<div class="tabs">
+
+<button id="loginTab"
+class="active-tab"
+onclick="showLogin()">
+Login </button>
+
+<button id="signupTab"
+onclick="showSignup()">
+Signup </button>
+
+</div>
+
+<!-- LOGIN -->
+
+<div id="loginForm"
+class="form active">
+
+<h2>Login</h2>
+
+<input
+type="email"
+id="loginEmail"
+placeholder="Email Address">
+
+<input
+type="password"
+id="loginPassword"
+placeholder="Password">
+
+<button
+class="submit-btn"
+onclick="loginUser()">
+
+Login
+
+</button>
+
+</div>
+
+<!-- SIGNUP -->
+
+<div id="signupForm"
+class="form">
+
+<h2>Create Account</h2>
+
+<input
+type="text"
+id="name"
+placeholder="Full Name">
+
+<input
+type="email"
+id="email"
+placeholder="Email Address">
+
+<input
+type="password"
+id="password"
+placeholder="Password">
+
+<input
+type="password"
+id="confirmPassword"
+placeholder="Confirm Password">
+
+<button
+class="submit-btn"
+onclick="signupUser()">
+
+Create Account
+
+</button>
+
+</div>
+
+<div id="message"
+class="message"></div>
+
+</div>
+
+</div>
+
+<script>
+
+// Auto Login
+
+if(localStorage.getItem("currentUser")){
+
+console.log("Already Logged In");
+
+}
+
+// Tabs
+
+function showLogin(){
+
+document.getElementById("loginForm")
+.classList.add("active");
+
+document.getElementById("signupForm")
+.classList.remove("active");
+
+document.getElementById("loginTab")
+.classList.add("active-tab");
+
+document.getElementById("signupTab")
+.classList.remove("active-tab");
+
+clearMessage();
+}
+
+function showSignup(){
+
+document.getElementById("signupForm")
+.classList.add("active");
+
+document.getElementById("loginForm")
+.classList.remove("active");
+
+document.getElementById("signupTab")
+.classList.add("active-tab");
+
+document.getElementById("loginTab")
+.classList.remove("active-tab");
+
+clearMessage();
+}
+
+function showMessage(text,type){
+
+const msg=document.getElementById("message");
+
+msg.innerHTML=text;
+
+msg.className=
+"type"==="success"
+? "message success"
+: "message error";
+
+}
+
+function clearMessage(){
+
+document.getElementById("message")
+.innerHTML="";
+
+}
+
+// Signup
+
+function signupUser(){
+
+const name=
+document.getElementById("name").value.trim();
+
+const email=
+document.getElementById("email").value.trim();
+
+const password=
+document.getElementById("password").value;
+
+const confirm=
+document.getElementById("confirmPassword").value;
+
+if(name===""){
+showMessage(
+"Enter your full name",
+"error"
+);
+return;
+}
+
+const emailRegex =
+/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if(!emailRegex.test(email)){
+showMessage(
+"Enter a valid email",
+"error"
+);
+return;
+}
+
+if(password.length<6){
+showMessage(
+"Password must be at least 6 characters",
+"error"
+);
+return;
+}
+
+if(password!==confirm){
+showMessage(
+"Passwords do not match",
+"error"
+);
+return;
+}
+
+let users=
+JSON.parse(
+localStorage.getItem("users")
+) || [];
+
+let exists=
+users.find(
+user=>user.email===email
+);
+
+if(exists){
+showMessage(
+"Account already exists with this email",
+"error"
+);
+return;
+}
+
+users.push({
+name:name,
+email:email,
+password:password
+});
+
+localStorage.setItem(
+"users",
+JSON.stringify(users)
+);
+
+showMessage(
+"Account created successfully!",
+"success"
+);
+
+setTimeout(()=>{
+showLogin();
+},1500);
+
+}
+
+// Login
+
+function loginUser(){
+
+const email=
+document.getElementById("loginEmail").value.trim();
+
+const password=
+document.getElementById("loginPassword").value;
+
+let users=
+JSON.parse(
+localStorage.getItem("users")
+) || [];
+
+let user=
+users.find(
+u=>u.email===email
+&& u.password===password
+);
+
+if(!user){
+
+showMessage(
+"Invalid email or password",
+"error"
+);
+
+return;
+
+}
+
+localStorage.setItem(
+"currentUser",
+JSON.stringify(user)
+);
+
+showMessage(
+"Login Successful!",
+"success"
+);
+
+setTimeout(()=>{
+
+window.location.href="/";
+
+},1000);
+
+}
+
+</script>
+
+{% include 'footer.html' %}
+
+</body>
+</html>

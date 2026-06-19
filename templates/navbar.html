@@ -1,0 +1,194 @@
+<style>
+
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 60px;
+    background:white;
+    box-shadow:0 2px 15px rgba(0,0,0,0.08);
+    position:sticky;
+    top:0;
+    z-index:999;
+}
+
+.navbar-logo{
+    font-size:28px;
+    font-weight:700;
+    color:#6c63ff;
+    font-family:'Segoe UI',sans-serif;
+}
+
+.navbar-menu{
+    display:flex;
+    list-style:none;
+    gap:35px;
+    margin:0;
+    padding:0;
+}
+
+.navbar-menu li a{
+    text-decoration:none;
+    color:#444;
+    font-size:16px;
+    font-weight:600;
+    font-family:'Segoe UI',sans-serif;
+    transition:.3s;
+}
+
+.navbar-menu li a:hover{
+    color:#6c63ff;
+}
+.navbar-menu li a{
+    text-decoration:none;
+    color:#444;
+    font-size:16px;
+    font-weight:600;
+    font-family:'Segoe UI',sans-serif;
+    position:relative;
+    transition:.3s;
+}
+
+.navbar-menu li a::after{
+    content:'';
+    position:absolute;
+    left:0;
+    bottom:-5px;
+    width:0%;
+    height:3px;
+    background:#6c63ff;
+    transition:.3s;
+}
+
+.navbar-menu li a:hover{
+    color:#6c63ff;
+}
+
+.navbar-menu li a:hover::after{
+    width:100%;
+}
+</style>
+<body>
+<nav class="navbar">
+
+<div class="navbar-logo">
+DeepFake AI
+</div>
+
+<ul class="navbar-menu">
+
+<li>
+<a href="/">Home</a>
+</li>
+
+<li>
+<a href="#"
+onclick="openDetection()">
+Detection
+</a>
+</li>
+
+<li>
+<a href="#"
+id="authLink">
+Login
+</a>
+</li>
+
+</ul>
+
+</nav>
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const authLink =
+    document.getElementById("authLink");
+
+    const currentUser =
+    localStorage.getItem("currentUser");
+
+    // User Logged In
+    if(currentUser){
+
+        authLink.innerText = "Logout";
+
+        authLink.onclick = function(){
+
+            localStorage.removeItem("currentUser");
+
+            alert("Logged Out Successfully");
+
+            window.location.href = "/";
+
+        };
+
+    }
+
+    // User Not Logged In
+    else{
+
+        authLink.innerText = "Login";
+
+        authLink.href = "/login";
+
+    }
+
+});
+const user =
+JSON.parse(
+localStorage.getItem("currentUser")
+);
+
+if(user){
+
+document.getElementById(
+"welcomeUser"
+).innerHTML =
+`<span style="color:#6c63ff;font-weight:600">
+Hi, ${user.name}
+</span>`;
+
+}
+
+</script>
+<script>
+
+function showLoginPopup(){
+
+    const popup =
+    document.getElementById("loginPopup");
+
+    if(popup){
+        popup.style.display="flex";
+    }
+
+}
+
+function redirectLogin(){
+
+    window.location.href="/login";
+
+}
+
+function openDetection(){
+
+    const user =
+    localStorage.getItem("currentUser");
+
+    if(user){
+
+        window.location.href="/detection";
+
+    }
+
+    else{
+
+        showLoginPopup();
+
+    }
+
+}
+
+</script>
+</body>

@@ -1,0 +1,474 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Deepfake Detection</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* ---------- BODY ---------- */
+body {
+    background: linear-gradient(135deg, #dfe9f3, #fce1f1);
+    margin: 0;
+    padding: 0;
+}
+
+/* ---------- HEADER ---------- */
+h1 {
+    text-align: center;
+    padding: 25px;
+    color: #4b0082;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+h2 {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 18px;   /* ✅ spacing added */
+    color: #5a4fcf;
+}
+
+h3 {
+    font-weight: 600;
+    margin-top: 10px;
+}
+/* ---------- LAYOUT ---------- */
+.container {
+    display: flex;
+    justify-content: center;   /* ✅ equal spacing both sides */
+    align-items: stretch;
+    gap: 30px;
+    padding: 20px 60px;        /* ✅ equal left-right spacing */
+    transition: all 0.6s ease;
+}
+
+.container.active {
+    justify-content: flex-start;
+    padding-left: 40px;
+}
+
+
+.card {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    padding: 28px;
+    border-radius: 22px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+    border: 1px solid rgba(255,255,255,0.4);
+    height: 500px;   /* ✅ fixed equal height */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* LEFT CARD */
+.left-card {
+    width: 420px;
+    justify-content: space-between;
+}
+
+/* RIGHT CARD (hidden initially) */
+.right-card {
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.6s ease;
+}
+
+.right-card.active {
+    width: 800px;
+    opacity: 1;
+}
+
+.right-card {
+    justify-content: space-between;  /* ✅ fills vertical space */
+}
+/* ---------- BUTTONS ---------- */
+.file-label, button {
+    background: linear-gradient(135deg, #7aa7ff, #d7a6ff);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 14px;
+    cursor: pointer;
+    border: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.file-label:hover, button:hover {
+    transform: scale(1.07);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+/* ---------- FILE NAME ---------- */
+#fileName {
+    margin-left: 12px;
+    font-size: 14px;
+    display: inline-block;
+    max-width: 200px;
+    vertical-align: middle;
+}
+
+/* ---------- PREVIEW ---------- */
+.preview-box {
+    margin-top: 15px;
+    height: 240px;   /* ✅ increased */
+    background: #f3f3f3;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.preview-box img, video {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+#resultText {
+    text-align: center;
+    font-size: 24px;
+    margin: 5px 0;
+}
+
+#confidenceText {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* ---------- LOADER ---------- */
+#loader {
+    display: none;
+    text-align: center;
+}
+
+.spinner {
+    border: 5px solid #eee;
+    border-top: 5px solid #a18cd1;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* ---------- FRAME STRIP ---------- */
+.frame-strip {
+    display: flex;
+    gap: 5px;
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+.frame-strip img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+/* ---------- RESULT ---------- */
+.real {
+    color: #2ecc71;
+    font-size: 22px;
+}
+
+.fake {
+    color: #ff6b81;
+    font-size: 22px;
+}
+
+/* ===== RESULT ANIMATION ===== */
+.fade-slide {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease;
+}
+
+.fade-slide.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#explanationCard {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 15px;
+    background: #ffffffaa;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: all 0.5s ease;
+}
+
+#explanationCard.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#chart {
+    height: 240px !important;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+</style>
+</head>
+
+<body>
+{% include 'navbar.html' %}
+<h1>Deepfake Detection System</h1>
+
+<div class="container">
+
+    <!-- LEFT PANEL -->
+    <div class="card left-card">
+        <h2>Upload & Preview</h2>
+
+        <input type="file" id="fileInput" hidden>
+        <label class="file-label" for="fileInput">Choose File</label>
+        <span id="fileName">No file selected</span>
+
+        <div class="preview-box" id="previewBox">
+            Preview
+        </div>
+
+        <br><br>
+        <button onclick="analyze()">Analyze</button>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="card right-card" id="resultCard" style="display:none;">
+        <h2>Result</h2>
+
+        <!-- LOADER -->
+        <div id="loader">
+            <div class="spinner"></div>
+            <p>Analyzing frames...</p>
+
+            <!-- 🔥 FRAME PREVIEW STRIP -->
+            <div class="frame-strip" id="frameStrip"></div>
+        </div>
+
+        <!-- RESULT TEXT -->
+        <h3 id="resultText" class="fade-slide"></h3>
+        <h3 id="confidenceText" class="fade-slide"></h3>
+
+        <!-- CHART -->
+        <canvas id="chart"></canvas>
+
+        <!-- EXPLANATION -->
+        <div id="explanationCard">
+            <h3>Analysis Insight</h3>
+            <p id="explanationText"></p>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+let selectedFile = null;
+let chartInstance = null;
+
+document.getElementById("fileInput").addEventListener("change", function () {
+    selectedFile = this.files[0];
+
+    if (!selectedFile) return;
+
+    document.getElementById("fileName").innerText = selectedFile.name;
+
+    const previewBox = document.getElementById("previewBox");
+    previewBox.innerHTML = "";
+
+    if (selectedFile.type.startsWith("image")) {
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(selectedFile);
+        previewBox.appendChild(img);
+    } else {
+        const video = document.createElement("video");
+        video.src = URL.createObjectURL(selectedFile);
+        video.controls = true;
+        previewBox.appendChild(video);
+    }
+});
+
+function analyze() {
+
+    if (!selectedFile) {
+        alert("Please select a file first!");
+        return;
+    }
+
+    document.querySelector(".container").classList.add("active");
+    document.querySelector(".right-card").classList.add("active");
+    document.getElementById("resultCard").style.display = "block";
+    document.getElementById("loader").style.display = "block";
+
+    // 🔥 REAL FRAME EXTRACTION (VIDEO ONLY)
+    if (selectedFile.type.startsWith("video")) {
+
+        const formDataFrames = new FormData();
+        formDataFrames.append("file", selectedFile);
+
+        fetch("/extract_frames", {
+            method: "POST",
+            body: formDataFrames
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.error) {
+                console.log("Frame extraction error:", data.error);
+                return;
+            }
+
+            const frameStrip = document.getElementById("frameStrip");
+            frameStrip.innerHTML = "";
+
+            data.frames.slice(0, 12).forEach(frame => {
+                const img = document.createElement("img");
+                img.src = frame;
+                frameStrip.appendChild(img);
+            });
+
+        })
+        .catch(err => {
+            console.log("Frame API error:", err);
+        });
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    fetch("/predict", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.text())
+    .then(text => {
+
+        let data;
+
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.log("Server response:", text);
+            alert("Server error — check console");
+            return;
+        }
+
+        // ✅ FIX: removed interval bug
+        document.getElementById("loader").style.display = "none";
+
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        const real = Number(data.real_conf || 0);
+        const fake = Number(data.fake_conf || 0);
+
+        const resultText = document.getElementById("resultText");
+        resultText.innerText = data.result;
+        resultText.classList.add("show");
+        document.getElementById("confidenceText").classList.add("show");
+        resultText.className = data.result === "Real" ? "real" : "fake";
+
+        document.getElementById("confidenceText").innerText =
+            "Confidence: " + (Number(data.confidence) * 100).toFixed(2) + "%";
+
+        const ctx = document.getElementById("chart").getContext("2d");
+
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Real', 'Fake'],
+                datasets: [{
+                    data: [real * 100, fake * 100],
+                    backgroundColor: [
+                        'rgba(46, 204, 113, 0.7)',   // soft green
+                        'rgba(255, 107, 129, 0.7)'   // soft pink/red
+                    ],
+                    borderRadius: 10
+                }]
+            },
+            options: {
+                animation: {
+                    duration: 1500,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: value => value + "%"
+                        }
+                    }
+                }
+            }
+        });
+
+        // ✅ Explanation
+        let explanation = "";
+
+        const confidence = Number(data.confidence);
+        const diff = Math.abs(real - fake);
+
+        // -------- FAKE CASE --------
+        if (data.result === "Fake") {
+
+            if (confidence > 0.85) {
+                explanation = "High likelihood of manipulation. Strong inconsistencies detected in facial structure and texture patterns.";
+            }
+            else if (diff < 0.2) {
+                explanation = "Possible manipulation detected, but features are mixed. Some frames appear natural while others show anomalies.";
+            }
+            else {
+                explanation = "Moderate signs of deepfake detected. Subtle irregularities in facial regions and expression consistency.";
+            }
+        }
+
+        // -------- REAL CASE --------
+        else {
+
+            if (confidence > 0.85) {
+                explanation = "Highly authentic content. Facial features and expressions are consistent and natural across frames.";
+            }
+            else if (diff < 0.2) {
+                explanation = "Mostly real, but slight variations detected. Could be due to lighting or compression artifacts.";
+            }
+            else {
+                explanation = "Content appears real with stable facial structure and no major signs of manipulation.";
+            }
+        }
+
+        document.getElementById("explanationText").innerText = explanation;
+        document.getElementById("explanationCard").classList.add("show");
+    })
+    .catch(err => {
+        console.log(err);
+        alert("Error processing file");
+    });
+}
+
+</script>
+{% include 'footer.html' %}
+</body>
+</body>
+</html>
