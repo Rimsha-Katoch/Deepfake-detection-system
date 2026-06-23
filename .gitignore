@@ -12,8 +12,6 @@ uploads/
 audio_dataset/
 data/
 
-# Model Weights
-models/*.pth
 
 # Generated Frames
 static/frames/

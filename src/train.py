@@ -16,7 +16,7 @@ train_transform = transforms.Compose([
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.RandomRotation(15),
     transforms.ColorJitter(brightness=0.3, contrast=0.3),
-    transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),  # 🔥 stronger augmentation
+    transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),  #  stronger augmentation
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406],
                          [0.229, 0.224, 0.225])
@@ -31,7 +31,7 @@ val_transform = transforms.Compose([
 
 # ------------------ DATASET ------------------
 
-dataset = datasets.ImageFolder("data")  # ✅ YOUR FOLDER
+dataset = datasets.ImageFolder("data")  #  YOUR FOLDER
 
 train_size = int(0.8 * len(dataset))
 val_size = len(dataset) - train_size
@@ -48,7 +48,7 @@ val_loader = DataLoader(val_data, batch_size=32, shuffle=False)
 
 model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
 
-# 🔥 freeze most layers (very important fix)
+# freeze most layers (very important fix)
 for param in model.parameters():
     param.requires_grad = False
 
@@ -60,7 +60,7 @@ num_features = model.fc.in_features
 model.fc = nn.Sequential(
     nn.Linear(num_features, 128),
     nn.ReLU(),
-    nn.Dropout(0.6),  # 🔥 stronger dropout
+    nn.Dropout(0.6),  #  stronger dropout
     nn.Linear(128, 2)
 )
 
@@ -135,6 +135,6 @@ import os
 os.makedirs("models", exist_ok=True)
 
 torch.save(model.state_dict(), "models/deepfake_model.pth")
-print("✅ Model saved successfully!")
+print(" Model saved successfully!")
 # torch.save(model.state_dict(), "models/deepfake_model.pth")
-# print("✅ Model saved successfully!")
+# print(" Model saved successfully!")
