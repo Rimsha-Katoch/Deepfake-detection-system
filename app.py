@@ -109,10 +109,8 @@ def extract_frames_api():
         return jsonify({"error": str(e)})
 
 # ---------------- RUN ----------------
-
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=7860)
     
 
 # “My system supports both image and video deepfake detection.
