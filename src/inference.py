@@ -8,7 +8,7 @@ import torch.nn as nn
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ---------------- MODEL ----------------
-model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+model = models.resnet18(weights=None)
 
 num_features = model.fc.in_features
 model.fc = nn.Sequential(

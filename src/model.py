@@ -6,7 +6,7 @@ class DeepfakeResNet(nn.Module):
     def __init__(self):
         super(DeepfakeResNet, self).__init__()
 
-        self.model = models.resnet18(pretrained=True)
+        self.model = models.resnet18(weights=None)
 
   
         for param in self.model.parameters():
