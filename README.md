@@ -1,6 +1,6 @@
 ﻿# 🎭 Deepfake AI Detection System
 
-A Multi-Modal Deepfake Detection System built using **Flask, PyTorch, OpenCV, and Audio Analysis** to identify AI-generated fake images and videos. The system combines visual and audio-based detection techniques to improve prediction reliability.
+A Deepfake Detection System built using **Flask, PyTorch, OpenCV, and Audio Analysis** to identify AI-generated fake images and videos. The system combines visual and audio-based detection techniques to improve prediction reliability.
 
 ---
 
